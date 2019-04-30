@@ -11,11 +11,16 @@ pip install -r requirements.txt
 ```
 
 ## Demon
-
+Feature selection demostration of corn sample near infrared (NIR) spectra by (MC-UVE) and randomization test(RT). 
 ```python
-python Feature_selection_mcuve.py
+python FeatureSelectionDemo_mcuve.py
+python FeatureSelectionDemo_RT.py
 ```
 
+##Ref
+1. Cai, W. S.;  Li, Y. K.; Shao, X. G., A variable selection method based on uninformative variable elimination for multivariate calibration of near-infrared spectra. Chemom. Intell. Lab. Syst. 2008, 90 (2), 188-194.
+2. Xu, H.;  Liu, Z. C.;  Cai, W. S.; Shao, X. G., A wavelength selection method based on randomization test for near-infrared spectral analysis. Chemom. Intell. Lab. Syst. 2009, 97 (2), 189-193.
+3. Zhang, J.;  Cui, X. Y.;  Cai, W. S.; Shao, X. G., A variable importance criterion for variable selection in near-infrared spectral analysis. Sci. China Chem. 2018, 62, 271–279.
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
