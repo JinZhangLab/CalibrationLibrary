@@ -22,7 +22,6 @@ python FeatureSelectionDemo_RT.py
 2. Xu, H.;  Liu, Z. C.;  Cai, W. S.; Shao, X. G., A wavelength selection method based on randomization test for near-infrared spectral analysis. Chemom. Intell. Lab. Syst. 2009, 97 (2), 189-193.
 3. Zhang, J.;  Cui, X. Y.;  Cai, W. S.; Shao, X. G., A variable importance criterion for variable selection in near-infrared spectral analysis. Sci. China Chem. 2018, 62, 271–279.
 
-
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
