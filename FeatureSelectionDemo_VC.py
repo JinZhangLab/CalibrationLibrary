@@ -49,7 +49,7 @@ if __name__ == "__main__":
     plt.plot(rtModel.criteria)
     plt.xlabel("Wavelength")
     plt.ylabel("Intensity")
-    plt.title("C value of RT")
+    plt.title("C value of VC")
     plt.savefig("./Image/Image3_C_vale.png")
     plt.close()
 
