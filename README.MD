@@ -4,7 +4,7 @@ This lib is a Python library for dealing with multivariate calibration, e.g., Ne
 
 ## Installation
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install toolkits in requirements.txt.
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install toolkit in requirements.txt.
 
 ```bash
 pip install -r requirements.txt
