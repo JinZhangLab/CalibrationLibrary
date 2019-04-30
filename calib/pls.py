@@ -4,24 +4,25 @@ from sklearn.linear_model import  LinearRegression
 from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import cross_val_score
 
+
 class MCuve:
-    def __init__(self, x, y, nComp = 1, nrep = 500, testSize = 0.2):
+    def __init__(self, x, y, ncomp=1, nrep=500, testSize=0.2):
         self.x = x
         self.y = y
-        self.ncomp = nComp
+        self.ncomp = ncomp
         self.nrep = nrep
         self.testSize = testSize
-        self.stability = None
+        self.criteria = None
         self.featureIndex = None
         self.featureR2 = np.empty(self.x.shape[1])
         self.selFeature = None
 
-    def calcStability(self):
+    def calcCriteria(self):
         PLSCoef = np.zeros((self.nrep, self.x.shape[1]))
-        ss = ShuffleSplit(n_splits = self.nrep, test_size = self.testSize)
+        ss = ShuffleSplit(n_splits=self.nrep, test_size=self.testSize)
         step = 0
         for train, test in ss.split(self.x, self.y):
-            xtrain = self.x[train,:]
+            xtrain = self.x[train, :]
             ytrain = self.y[train]
             plsModel = PLSRegression(self.ncomp)
             plsModel.fit(xtrain, ytrain)
@@ -29,10 +30,10 @@ class MCuve:
             step += 1
         meanCoef = np.mean(PLSCoef, axis=0)
         stdCoef = np.std(PLSCoef, axis=0)
-        self.stability = meanCoef/stdCoef
+        self.criteria = meanCoef / stdCoef
 
-    def evalStability(self, cv=3, n_jobs=None):
-        self.featureIndex = np.argsort(-np.abs(self.stability))
+    def evalCriteria(self, cv=3):
+        self.featureIndex = np.argsort(-np.abs(self.criteria))
         for i in range(self.x.shape[1]):
             if i<self.ncomp:
                 regModel = LinearRegression()
@@ -53,6 +54,39 @@ class MCuve:
                     returnx[i] = argi[:, self.selFeature]
                 i += 1
         return tuple(returnx)
+
+
+class RT(MCuve):
+    def calcCriteria(self):
+        # calculate normal pls regression coefficient
+        plsmodel0=PLSRegression(self.ncomp)
+        plsmodel0.fit(self.x, self.y)
+        # calculate noise reference regression coefficient
+        plsCoef0=plsmodel0.coef_
+        PLSCoef = np.zeros((self.nrep, self.x.shape[1]))
+        for i in range(self.nrep):
+            randomidx = list(range(self.x.shape[0]))
+            np.random.shuffle(randomidx)
+            ytrain = self.y[randomidx]
+            plsModel = PLSRegression(self.ncomp)
+            plsModel.fit(self.x, ytrain)
+            PLSCoef[i, :] = plsModel.coef_.T
+        plsCoef0 = np.tile(np.reshape(plsCoef0, [1, -1]), [ self.nrep, 1])
+        criteria = np.sum(np.abs(PLSCoef) > np.abs(plsCoef0), axis=0)/self.nrep
+        self.criteria = criteria
+
+    def evalCriteria(self, cv=3):
+        # Note: small P value indicating important feature
+        self.featureIndex = np.argsort(self.criteria)
+        for i in range(self.x.shape[1]):
+            if i<self.ncomp:
+                regModel = LinearRegression()
+            else:
+                regModel = PLSRegression(self.ncomp)
+            xi = self.x[:, self.featureIndex[:i+1]]
+            cvScore = cross_val_score(regModel, xi, self.y, cv=cv)
+            self.featureR2[i] = np.mean(cvScore)
+
 
 if __name__ == "__main__":
     print("This is the PLS model")
