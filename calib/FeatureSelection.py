@@ -1,11 +1,13 @@
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.linear_model import  LinearRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
+from sklearn.utils import shuffle
+from sklearn.metrics import mean_squared_error
 
-
-class MCuve:
+class MCUVE:
     def __init__(self, x, y, ncomp=1, nrep=500, testSize=0.2):
         self.x = x
         self.y = y
@@ -56,7 +58,7 @@ class MCuve:
         return tuple(returnx)
 
 
-class RT(MCuve):
+class RT(MCUVE):
     def calcCriteria(self):
         # calculate normal pls regression coefficient
         plsmodel0=PLSRegression(self.ncomp)
@@ -86,6 +88,27 @@ class RT(MCuve):
             xi = self.x[:, self.featureIndex[:i+1]]
             cvScore = cross_val_score(regModel, xi, self.y, cv=cv)
             self.featureR2[i] = np.mean(cvScore)
+
+class VC(RT):
+    def calcCriteria(self, cv=3):
+        # calculate normal pls regression coefficient
+        nVar = self.x.shape[1]
+        sampleMatrix = np.ndarray([self.nrep,self.x.shape[1]], dtype=int)
+        sampleMatrix[:, :] = 0
+        errVector = np.ndarray([self.nrep,1])
+        nSample = max([self.ncomp, self.x.shape[0]//2, nVar//10])
+        sampleidx = range(self.x.shape[1])
+        for i in range(self.nrep):
+            sampleidx = shuffle(sampleidx)
+            seli =sampleidx[:nSample]
+            plsModel = PLSRegression(n_components=self.ncomp)
+            plsModel.fit(self.x[:, seli], self.y)
+            sampleMatrix[i, seli] = 1
+            yhati=cross_val_predict(plsModel, self.x[:, seli], self.y, cv=cv)
+            errVector[i] = np.sqrt(mean_squared_error(yhati, self.y))
+        plsModel = PLSRegression(n_components=self.ncomp)
+        plsModel.fit(sampleMatrix, errVector)
+        self.criteria = plsModel.coef_.ravel()
 
 
 if __name__ == "__main__":

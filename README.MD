@@ -11,16 +11,18 @@ pip install -r requirements.txt
 ```
 
 ## Demon
-Feature selection demostration of corn sample near infrared (NIR) spectra by (MC-UVE) and randomization test(RT). 
+Feature selection demostration of corn sample near infrared (NIR) spectra by **Monte Carlo-uninformative variable elimination (MC-UVE)** and **randomization test(RT)**. 
 ```python
 python FeatureSelectionDemo_mcuve.py
 python FeatureSelectionDemo_RT.py
 ```
 
 ##Ref
-1. Cai, W. S.;  Li, Y. K.; Shao, X. G., A variable selection method based on uninformative variable elimination for multivariate calibration of near-infrared spectra. Chemom. Intell. Lab. Syst. 2008, 90 (2), 188-194.
-2. Xu, H.;  Liu, Z. C.;  Cai, W. S.; Shao, X. G., A wavelength selection method based on randomization test for near-infrared spectral analysis. Chemom. Intell. Lab. Syst. 2009, 97 (2), 189-193.
-[3. Zhang, J.;  Cui, X. Y.;  Cai, W. S.; Shao, X. G., A variable importance criterion for variable selection in near-infrared spectral analysis. Sci. China Chem. 2018, 62, 271–279.](https://link.springer.com/article/10.1007%2Fs11426-018-9368-9)
+_1. Cai, W. S.;  Li, Y. K.; Shao, X. G., A variable selection method based on uninformative variable elimination for multivariate calibration of near-infrared spectra. Chemom. Intell. Lab. Syst. 2008, 90 (2), 188-194._
+
+_2. Xu, H.;  Liu, Z. C.;  Cai, W. S.; Shao, X. G., A wavelength selection method based on randomization test for near-infrared spectral analysis. Chemom. Intell. Lab. Syst. 2009, 97 (2), 189-193._
+
+[_3. Zhang, J.;  Cui, X. Y.;  Cai, W. S.; Shao, X. G., A variable importance criterion for variable selection in near-infrared spectral analysis. Sci. China Chem. 2018, 62, 271–279._](https://link.springer.com/article/10.1007%2Fs11426-018-9368-9)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

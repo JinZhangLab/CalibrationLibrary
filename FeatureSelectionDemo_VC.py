@@ -10,7 +10,7 @@ import scipy.io as scio
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split
 
-from calib.FeatureSelection import RT
+from calib.FeatureSelection import VC
 
 if __name__ == "__main__":
     ncomp = 7
@@ -44,13 +44,13 @@ if __name__ == "__main__":
     plt.close()
 
     # P value of RT
-    rtModel = RT(Xtrain, Ytrain, ncomp)
+    rtModel = VC(Xtrain, Ytrain, ncomp, nrep=7000)
     rtModel.calcCriteria()
     plt.plot(rtModel.criteria)
     plt.xlabel("Wavelength")
     plt.ylabel("Intensity")
-    plt.title("P value of RT")
-    plt.savefig("./Image/Image3_P_vale.png")
+    plt.title("C value of RT")
+    plt.savefig("./Image/Image3_C_vale.png")
     plt.close()
 
     # Feature ranking efficienty by stability of RT
@@ -73,6 +73,6 @@ if __name__ == "__main__":
     plt.scatter(Ytest, YtestNew_hat, marker='*')
     plt.xlabel("Prediction")
     plt.ylabel("Reference")
-    plt.title("Prediction after RT")
-    plt.savefig("./Image/Image5_Prediction_RT.png")
+    plt.title("Prediction after VC")
+    plt.savefig("./Image/Image5_Prediction_VC.png")
     plt.close()

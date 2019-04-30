@@ -6,16 +6,16 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.io as scio
+import scipy.io as sio
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split
 
-from calib.pls import MCuve
+from calib.FeatureSelection import MCUVE
 
 if __name__ == "__main__":
     ncomp = 7
     MatPath = './data/corn.mat'
-    CornData = scio.loadmat(MatPath)
+    CornData = sio.loadmat(MatPath)
     wv = np.linspace(1100, 2498, (2498 - 1100) // 2 + 1, endpoint=True)
     X = CornData["X"]
     Y = CornData["Y"]
@@ -37,14 +37,14 @@ if __name__ == "__main__":
     plt.plot([Ytrain.min(), Ytrain.max()], [Ytrain.min(), Ytrain.max()], 'k--', lw=4)
     plt.scatter(Ytrain, Ytrain_hat, marker='*')
     plt.scatter(Ytest, Ytest_hat, marker='*')
-    plt.xlabel("Reference")
-    plt.ylabel("Prediction")
+    plt.xlabel("Prediction")
+    plt.ylabel("Reference")
     plt.title("Prediction of normal pls model")
     plt.savefig("./Image/Image2_PredictionPLS.png")
     plt.close()
 
     # Stability of MC-UVE
-    mcModel = MCuve(Xtrain, Ytrain, ncomp)
+    mcModel = MCUVE(Xtrain, Ytrain, ncomp)
     mcModel.calcCriteria()
     plt.plot(mcModel.criteria)
     plt.xlabel("Wavelength")
@@ -71,8 +71,8 @@ if __name__ == "__main__":
     plt.plot([Ytrain.min(), Ytrain.max()], [Ytrain.min(), Ytrain.max()], 'k--', lw=4)
     plt.scatter(Ytrain, YtrainNew_hat, marker='*')
     plt.scatter(Ytest, YtestNew_hat, marker='*')
-    plt.xlabel("Reference")
-    plt.ylabel("Prediction")
+    plt.xlabel("Prediction")
+    plt.ylabel("Reference")
     plt.title("Prediction after MC-UVE")
     plt.savefig("./Image/Image5_Prediction_MC_UVE.png")
     plt.close()
