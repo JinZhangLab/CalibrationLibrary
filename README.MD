@@ -1,6 +1,6 @@
 # Commom Calibration methods for multivariate calibration
 
-This lib is a Python library for dealing with multivariate calibration, e.g., Near infrared spectra regression and classification tasks.
+This is a Python library for dealing with multivariate calibration, e.g., Near infrared spectra regression and classification tasks.
 
 ## Installation
 
