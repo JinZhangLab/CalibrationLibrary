@@ -7,16 +7,22 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.utils import shuffle
 from sklearn.metrics import mean_squared_error
 
+
+# Single step feature selection method
 class MCUVE:
     def __init__(self, x, y, ncomp=1, nrep=500, testSize=0.2):
         self.x = x
         self.y = y
-        self.ncomp = ncomp
+        # The number of latent components should not be larger than any dimension size of independent matrix
+        if ncomp >= min(x.shape):
+            self.ncomp = min(x.shape)
+        else:
+            self.ncomp = ncomp
         self.nrep = nrep
         self.testSize = testSize
         self.criteria = None
         self.featureIndex = None
-        self.featureR2 = np.empty(self.x.shape[1])
+        self.featureR2 = np.full(self.x.shape[1], np.nan)
         self.selFeature = None
 
     def calcCriteria(self):
@@ -89,6 +95,7 @@ class RT(MCUVE):
             cvScore = cross_val_score(regModel, xi, self.y, cv=cv)
             self.featureR2[i] = np.mean(cvScore)
 
+
 class VC(RT):
     def calcCriteria(self, cv=3):
         # calculate normal pls regression coefficient
@@ -96,12 +103,16 @@ class VC(RT):
         sampleMatrix = np.ndarray([self.nrep,self.x.shape[1]], dtype=int)
         sampleMatrix[:, :] = 0
         errVector = np.ndarray([self.nrep,1])
-        nSample = max([self.ncomp, self.x.shape[0]//2, nVar//10])
+        # The number of variable in combination should less than the total variable number
+        if nVar > self.ncomp:
+            nSample = max([self.ncomp, nVar//10])
+        else:
+            nSample = max([1, nVar-1])
         sampleidx = range(self.x.shape[1])
         for i in range(self.nrep):
             sampleidx = shuffle(sampleidx)
-            seli =sampleidx[:nSample]
-            plsModel = PLSRegression(n_components=self.ncomp)
+            seli = sampleidx[:nSample]
+            plsModel = PLSRegression(n_components=min([self.ncomp, self.x.shape[0], len(seli)]))
             plsModel.fit(self.x[:, seli], self.y)
             sampleMatrix[i, seli] = 1
             yhati=cross_val_predict(plsModel, self.x[:, seli], self.y, cv=cv)
@@ -110,6 +121,59 @@ class VC(RT):
         plsModel.fit(sampleMatrix, errVector)
         self.criteria = plsModel.coef_.ravel()
 
+# Recursive feature selection method
+class MSVC:
+    def __init__(self, x, y, ncomp=1, nrep=7000, ncut=50, testSize=0.2):
+        self.x = x
+        self.y = y
+        # The number of latent components should not be larger than any dimension size of independent matrix
+        if ncomp >= min(x.shape):
+            self.ncomp = min(x.shape)
+        else:
+            self.ncomp = ncomp
+        self.nrep = nrep
+        self.ncut = ncut
+        self.testSize = testSize
+        self.criteria = np.full([ncut, self.x.shape[1]], np.nan)
+        self.featureR2 = np.empty(ncut)
+        self.selFeature = None
+
+    def calcCriteria(self):
+        varidx = np.array(range(self.x.shape[1]))
+        ncuti = np.logspace(np.log10(self.x.shape[1]), np.log10(1), self.ncut)
+        ncuti = (np.round(ncuti)).astype(int)
+        for i in range(self.ncut):
+            vcModel = VC(self.x[:, varidx], self.y, self.ncomp, nrep=self.nrep)
+            vcModel.calcCriteria()
+            self.criteria[i, varidx] = vcModel.criteria
+            var_ranked = np.argsort(vcModel.criteria)
+            if i < self.ncut - 1:
+                varidx = varidx[var_ranked[:ncuti[i+1]]]
+
+    def evalCriteria(self, cv=3):
+        for i in range(self.ncut):
+            varSeli = ~np.isnan(self.criteria[i, :])
+            print(i)
+            if sum(varSeli) < self.ncomp:
+                regModel = LinearRegression()
+            else:
+                regModel = PLSRegression(self.ncomp)
+            xi = self.x[:,varSeli]
+            cvScore = cross_val_score(regModel, xi, self.y, cv=cv)
+            self.featureR2[i] = np.mean(cvScore)
+
+    def cutFeature(self, *args):
+        cuti = np.argmax(self.featureR2)
+        self.selFeature = ~np.isnan(self.criteria[cuti, :])
+        if len(args) != 0:
+            returnx = list(args)
+            i = 0
+            for argi in args:
+                if argi.shape[1] == self.x.shape[1]:
+                    returnx[i] = argi[:, self.selFeature]
+                i += 1
+        return tuple(returnx)
+
 
 if __name__ == "__main__":
-    print("This is the PLS model")
+    print("This is the Feature selection library")

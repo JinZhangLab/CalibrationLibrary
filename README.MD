@@ -11,11 +11,12 @@ pip install -r requirements.txt
 ```
 
 ## Demon
-Feature selection demostration of corn sample near infrared (NIR) spectra by **Monte Carlo-uninformative variable elimination (MC-UVE)**, **randomization test(RT)**, and [**Variable selection _via_ Combination (VC)**](https://link.springer.com/article/10.1007%2Fs11426-018-9368-9). 
+Feature selection demostration of corn sample near infrared (NIR) spectra by **Monte Carlo-uninformative variable elimination (MC-UVE)**, **randomization test(RT)**, [**Variable selection _via_ Combination (VC)**, and **multi-step VC（MSVC）**](https://link.springer.com/article/10.1007%2Fs11426-018-9368-9). 
 ```python
 python FeatureSelectionDemo_mcuve.py
 python FeatureSelectionDemo_RT.py
 python FeatureSelectionDemo_VC.py
+python FeatureSelectionDemo_MSVC.py
 
 ```
 

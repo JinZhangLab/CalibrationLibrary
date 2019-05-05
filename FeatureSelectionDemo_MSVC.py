@@ -10,7 +10,7 @@ import scipy.io as scio
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split
 
-from calib.FeatureSelection import VC
+from calib.FeatureSelection import MSVC
 
 if __name__ == "__main__":
     ncomp = 7
@@ -43,18 +43,18 @@ if __name__ == "__main__":
     plt.savefig("./Image/Image2_PredictionPLS.png")
     plt.close()
 
-    # C value of VC
-    vcModel = VC(Xtrain, Ytrain, ncomp, nrep=7000)
+    # C value of MSVC
+    vcModel = MSVC(Xtrain, Ytrain, ncomp, nrep=500)
     vcModel.calcCriteria()
-    plt.plot(vcModel.criteria)
+    plt.imshow(vcModel.criteria, aspect='auto')
     plt.xlabel("Wavelength")
-    plt.ylabel("Intensity")
+    plt.ylabel("Iteration")
     plt.title("C value of VC")
-    plt.savefig("./Image/Image3_C_vale.png")
+    plt.savefig("./Image/Image3_MS_C_vale.png")
     plt.close()
 
     # Feature ranking efficienty by stability of VC
-    vcModel.evalCriteria(cv=5)
+    vcModel.evalCriteria(cv=3)
     plt.plot(vcModel.featureR2)
     plt.xlabel("Wavelength")
     plt.ylabel("Intensity")
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     # Prediction results after feature selection by VC
     XtrainNew, XtestNew = vcModel.cutFeature(Xtrain, Xtest)
-    plsModelNew = PLSRegression(n_components=ncomp)
+    plsModelNew = PLSRegression(n_components=min([ncomp, XtrainNew.shape[1]]))
     plsModelNew.fit(XtrainNew, Ytrain)
     YtrainNew_hat = plsModelNew.predict(XtrainNew)
     YtestNew_hat = plsModelNew.predict(XtestNew)
@@ -73,6 +73,6 @@ if __name__ == "__main__":
     plt.scatter(Ytest, YtestNew_hat, marker='*')
     plt.xlabel("Prediction")
     plt.ylabel("Reference")
-    plt.title("Prediction after VC")
-    plt.savefig("./Image/Image5_Prediction_VC.png")
+    plt.title("Prediction after MSVC")
+    plt.savefig("./Image/Image5_Prediction_MSVC.png")
     plt.close()
