@@ -9,7 +9,7 @@ import numpy as np
 import scipy.io as scio
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split
-
+from numpy.linalg import matrix_rank as rank
 from calib.FeatureSelection import MSVC
 
 if __name__ == "__main__":
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     # Prediction results after feature selection by VC
     XtrainNew, XtestNew = vcModel.cutFeature(Xtrain, Xtest)
-    plsModelNew = PLSRegression(n_components=min([ncomp, XtrainNew.shape[1]]))
+    plsModelNew = PLSRegression(n_components=min([ncomp, rank(XtrainNew)]))
     plsModelNew.fit(XtrainNew, Ytrain)
     YtrainNew_hat = plsModelNew.predict(XtrainNew)
     YtestNew_hat = plsModelNew.predict(XtestNew)

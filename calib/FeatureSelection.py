@@ -1,11 +1,12 @@
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import ShuffleSplit
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import cross_val_predict
-from sklearn.utils import shuffle
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import ShuffleSplit
+from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import cross_val_score
+from sklearn.utils import shuffle
+from numpy.linalg import matrix_rank as rank
 
 
 # Single step feature selection method
@@ -14,10 +15,7 @@ class MCUVE:
         self.x = x
         self.y = y
         # The number of latent components should not be larger than any dimension size of independent matrix
-        if ncomp >= min(x.shape):
-            self.ncomp = min(x.shape)
-        else:
-            self.ncomp = ncomp
+        self.ncomp = min([ncomp, rank(x)])
         self.nrep = nrep
         self.testSize = testSize
         self.criteria = None
@@ -32,7 +30,7 @@ class MCUVE:
         for train, test in ss.split(self.x, self.y):
             xtrain = self.x[train, :]
             ytrain = self.y[train]
-            plsModel = PLSRegression(self.ncomp)
+            plsModel = PLSRegression(min([self.ncomp, rank(xtrain)]))
             plsModel.fit(xtrain, ytrain)
             PLSCoef[step, :] = plsModel.coef_.T
             step += 1
@@ -43,11 +41,12 @@ class MCUVE:
     def evalCriteria(self, cv=3):
         self.featureIndex = np.argsort(-np.abs(self.criteria))
         for i in range(self.x.shape[1]):
+            xi = self.x[:, self.featureIndex[:i + 1]]
             if i<self.ncomp:
                 regModel = LinearRegression()
             else:
-                regModel = PLSRegression(self.ncomp)
-            xi = self.x[:, self.featureIndex[:i+1]]
+                regModel = PLSRegression(min([self.ncomp, rank(xi)]))
+
             cvScore = cross_val_score(regModel, xi, self.y, cv=cv)
             self.featureR2[i] = np.mean(cvScore)
 
@@ -87,11 +86,11 @@ class RT(MCUVE):
         # Note: small P value indicating important feature
         self.featureIndex = np.argsort(self.criteria)
         for i in range(self.x.shape[1]):
+            xi = self.x[:, self.featureIndex[:i + 1]]
             if i<self.ncomp:
                 regModel = LinearRegression()
             else:
-                regModel = PLSRegression(self.ncomp)
-            xi = self.x[:, self.featureIndex[:i+1]]
+                regModel = PLSRegression(min([self.ncomp, rank(xi)]))
             cvScore = cross_val_score(regModel, xi, self.y, cv=cv)
             self.featureR2[i] = np.mean(cvScore)
 
@@ -112,7 +111,7 @@ class VC(RT):
         for i in range(self.nrep):
             sampleidx = shuffle(sampleidx)
             seli = sampleidx[:nSample]
-            plsModel = PLSRegression(n_components=min([self.ncomp, self.x.shape[0], len(seli)]))
+            plsModel = PLSRegression(n_components=min([self.ncomp, rank(self.x[:, seli])]))
             plsModel.fit(self.x[:, seli], self.y)
             sampleMatrix[i, seli] = 1
             yhati=cross_val_predict(plsModel, self.x[:, seli], self.y, cv=cv)
@@ -127,10 +126,7 @@ class MSVC:
         self.x = x
         self.y = y
         # The number of latent components should not be larger than any dimension size of independent matrix
-        if ncomp >= min(x.shape):
-            self.ncomp = min(x.shape)
-        else:
-            self.ncomp = ncomp
+        self.ncomp = min([ncomp, rank(x)])
         self.nrep = nrep
         self.ncut = ncut
         self.testSize = testSize
@@ -140,7 +136,7 @@ class MSVC:
 
     def calcCriteria(self):
         varidx = np.array(range(self.x.shape[1]))
-        ncuti = np.logspace(np.log10(self.x.shape[1]), np.log10(1), self.ncut)
+        ncuti = np.logspace(np.log(self.x.shape[1]), np.log(1), self.ncut, base=np.e)
         ncuti = (np.round(ncuti)).astype(int)
         for i in range(self.ncut):
             vcModel = VC(self.x[:, varidx], self.y, self.ncomp, nrep=self.nrep)
@@ -153,12 +149,11 @@ class MSVC:
     def evalCriteria(self, cv=3):
         for i in range(self.ncut):
             varSeli = ~np.isnan(self.criteria[i, :])
-            print(i)
+            xi = self.x[:,varSeli]
             if sum(varSeli) < self.ncomp:
                 regModel = LinearRegression()
             else:
-                regModel = PLSRegression(self.ncomp)
-            xi = self.x[:,varSeli]
+                regModel = PLSRegression(min([self.ncomp, rank(xi)]))
             cvScore = cross_val_score(regModel, xi, self.y, cv=cv)
             self.featureR2[i] = np.mean(cvScore)
 
